@@ -1,16 +1,15 @@
 <!doctype html>
-<html lang="ko">
-<head>
+<html lang="en"> <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>서울 관광정보</title>
+  <title>Festival Compass in Seoul</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="wrap">
     <header>
       <div class="row">
-        <a href="index.html"><strong>서울 관광 나침반</strong></a>
+        <a href="index.html"><strong>Festival Compass in Seoul</strong></a>
         <div class="spacer"></div>
         <div class="dropdown">
           <button class="btn">EN</button>
@@ -24,23 +23,22 @@
     
     <main id="main">
       <section id="page-main" class="page">
+        
         <div id="mapWrap" tabindex="0">
+          <div class="map-placeholder">(Seoul Map Overlay)</div>
           
+          <div class="map-icon" style="top: 40%; left: 55%;">(Icon: Songpa-gu)</div>
+          <div class="map-icon" style="top: 45%; left: 50%;">(Icon: Gangnam-gu)</div>
+          <div class="map-icon" style="top: 20%; left: 30%;">(Icon: Jongno-gu)</div>
 
-[Image of Seoul tourist map]
-
-          <div id="panel">
-            <div id="hot" class="card clickable">
-              🔥 What's Hot?
-            </div>
-            <div class="card clickable">
-              ❤️ My Favorite
-            </div>
-          </div>
+          <a href="category.html" class="map-start-button">
+            Click to Explore Seoul
+          </a>
         </div>
+
       </section>
       
-      </main>
+    </main>
   </div>
   
   <script src="script.js" defer></script>
