@@ -7,7 +7,6 @@ from typing import List, Optional
 from contextlib import asynccontextmanager
 
 # --- 1. Pydantic 모델 정의 (API 응답 규격) ---
-
 class Festival(BaseModel):
     """
     [수정됨] 프론트엔드에 전달할 'total.csv'의 전체 행사 정보 모델.
