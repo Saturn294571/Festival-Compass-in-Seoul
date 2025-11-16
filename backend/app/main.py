@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+import sqlite3
 
 # --- 1. Pydantic 모델 정의 (API 응답 규격) ---
 class Festival(BaseModel):
@@ -69,46 +70,53 @@ UNPOPULAR_DISTRICTS = [
 # FastAPI 0.95.0 이상 권장: 'startup' 이벤트를 lifespan으로 대체
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    서버 시작 시 ML 모델을 메모리에 로드합니다.
-    (아키텍처 그림의 'Online' - 'Model Load' 부분)
-    """
     print("서버 시작: ML 모델 및 데이터를 로드합니다...")
     
-    # 0. 파일 경로 설정
-    BASE_PATH = "./" # main.py 기준 상대 경로
-    DATA_PATH = os.path.join(BASE_PATH, "data", "festivals_db.csv")
-    COSINE_SIM_PATH = os.path.join(BASE_PATH, "models", "cosine_sim_matrix.pkl")
-    ID_TO_INDEX_PATH = os.path.join(BASE_PATH, "models", "contentid_to_index.pkl")
+    # [수정] 데이터 경로를 .csv -> .db로 변경
+    DATA_PATH = os.path.join("data", "festivals.db") # 👈 SQLite DB 파일
+    TABLE_NAME = "festivals"
+    
+    COSINE_SIM_PATH = os.path.join("models", "cosine_sim_matrix.pkl")
+    ID_TO_INDEX_PATH = os.path.join("models", "contentid_to_index.pkl")
     
     try:
-        # 1. 마스터 DB (festivals_db.csv) 로드
-        db = pd.read_csv(DATA_PATH, dtype={'contentid': str})
+        # --- [수정] CSV 로드 대신 SQLite에서 로드 ---
+        print(f"✅ 1. SQLite DB ('{DATA_PATH}')에서 데이터 로드 중...")
+        conn = sqlite3.connect(DATA_PATH)
+        # 쿼리 결과로 DataFrame 생성
+        db = pd.read_sql_query(f"SELECT * FROM {TABLE_NAME}", conn)
+        conn.close()
         
-        # 2. 비인기 지역구 여부 'is_unpopular' 컬럼 추가 (효율적 필터링)
-        db['is_unpopular'] = db['sigungucode'].isin(UNPOPULAR_DISTRICTS)
+        # [중요] contentid를 문자열로 유지 (CSV 로드 시와 동일하게)
+        db['contentid'] = db['contentid'].astype(str)
         models["festivals_db"] = db
-        print(f"✅ 1. 마스터 DB 로드 완료 ({len(db)}건)")
+        print(f"✅ 1. 마스터 DB 로드 완료 ({len(models['festivals_db'])}건)")
+        # --- [수정 완료] ---
 
-        # 2. 코사인 유사도 행렬 (.pkl) 로드
+        # 2. 코사인 유사도 행렬 로드 (변경 없음)
         with open(COSINE_SIM_PATH, "rb") as f:
             models["cosine_sim_matrix"] = pickle.load(f)
         print("✅ 2. 코사인 유사도 행렬 로드 완료")
 
-        # 3. ID <-> Index 맵핑 딕셔너리 (.pkl) 로드
+        # 3. ID-Index 맵핑 로드 (변경 없음)
         with open(ID_TO_INDEX_PATH, "rb") as f:
             models["contentid_to_index"] = pickle.load(f)
         print("✅ 3. ID-Index 맵핑 로드 완료")
+        
+        # 4. 비인기 지역구 플래그 생성 (변경 없음)
+        db['is_unpopular'] = db['sigungucode'].isin(UNPOPULAR_DISTRICTS)
         
         print("--- 모델 로드 성공 ---")
     
     except FileNotFoundError as e:
         print(f"❌ [에러] 필수 파일 로드 실패: {e.filename}")
-        print("   -> 4_ML_Modeling.ipynb를 실행하여 pkl/csv 파일을 생성했는지 확인하세요.")
+        print("   -> (모델 pkl 파일 또는 festivals.db 파일이 없습니다.)")
+    except Exception as e:
+        print(f"❌ [에러] DB 로드 실패: {e}")
+        print("   -> 'migrate_to_sqlite.py'를 실행하여 'festivals.db'를 생성했는지 확인하세요.")
+
+    yield
     
-    yield # 서버가 실행되는 동안 모델을 메모리에 유지
-    
-    # --- 서버 종료 시 (정리) ---
     print("서버 종료: 모델을 메모리에서 해제합니다.")
     models.clear()
 
@@ -184,6 +192,32 @@ async def read_index():
     # uvicorn 실행 위치(backend/) 기준 상대 경로
     return FileResponse("../frontend/index.html")
 
+@app.get("/festivals", response_model=List[Festival])
+async def get_festivals_by_region(sigungucode: Optional[int] = None):
+    """
+    sigungucode를 기준으로 축제 목록을 반환합니다.
+    sigungucode가 없으면 모든 축제를 반환합니다.
+    """
+    try:
+        db = models["festivals_db"]
+    except KeyError:
+        raise HTTPException(status_code=500, detail="서버가 준비되지 않았습니다. (DB 로드 실패)")
+
+    if sigungucode:
+        # sigungucode로 DataFrame 필터링
+        # [중요] DB에서 읽어온 sigungucode가 숫자(int) 타입이라고 가정
+        try:
+            # Pydantic 모델(Festival)은 int를 기대하지만, 
+            # CSV/DB에서 문자열로 로드했을 수 있으므로 타입을 맞춰줍니다.
+            db['sigungucode'] = db['sigungucode'].astype(int)
+            filtered_df = db[db['sigungucode'] == sigungucode]
+        except ValueError:
+            raise HTTPException(status_code=400, detail="잘못된 sigungucode 형식입니다.")
+    else:
+        # 쿼리 파라미터가 없으면 전체 목록 반환
+        filtered_df = db
+
+    return filtered_df.to_dict(orient="records")
 
 @app.get("/recommendations/{content_id}", response_model=RecommendationResponse)
 def get_recommendations_api(content_id: str, top_n: int = 5):
