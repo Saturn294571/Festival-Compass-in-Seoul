@@ -5,6 +5,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 from contextlib import asynccontextmanager
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 # --- 1. Pydantic 모델 정의 (API 응답 규격) ---
 class Festival(BaseModel):
@@ -168,9 +170,12 @@ def get_recommendations(content_id: str, top_n: int = 5):
 
 # --- 5. API 엔드포인트 정의 ---
 
-@app.get("/")
-def read_root():
-    return {"message": "Festival Compass in Seoul - API 서버"}
+# 루트 URL("/") 접속 시 index.html 반환
+# FileResponse는 API 엔드포인트와 달리 response_class로 지정해야 할 수 있음
+@app.get("/", response_class=FileResponse)
+async def read_index():
+    # uvicorn 실행 위치(backend/) 기준 상대 경로
+    return FileResponse("../frontend/index.html")
 
 
 @app.get("/recommendations/{content_id}", response_model=RecommendationResponse)
@@ -197,3 +202,8 @@ def get_recommendations_api(content_id: str, top_n: int = 5):
         # 기타 예외 처리
         print(f"[에러] /recommendations/{content_id} 처리 중 오류: {e}")
         raise HTTPException(status_code=500, detail=f"서버 내부 오류: {e}")
+    
+# --- 6. 정적파일 마운팅 ---
+# 나머지 모든 정적 파일(style.css, script.js, category/...)을 서비스합니다.
+# 이 코드는 *반드시* 모든 @app.get 엔드포인트보다 뒤에 (파일 맨 마지막에) 위치해야 합니다.
+app.mount("/", StaticFiles(directory="../frontend"), name="static")
