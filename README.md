@@ -1,6 +1,4 @@
-네, 프로젝트의 현재 상태(GCR 배포, 통합 서버)와 요청하신 4가지 사항을 모두 반영하여 `README.md` 파일을 업데이트했습니다.
-
-기존 `README.md`의 좋은 구조는 유지하되, 논의된 내용으로 핵심 섹션을 재구성하고 새로운 섹션을 추가했습니다.
+네, SQLite 통합 및 Google Cloud Run 배포 등 최신 내용을 모두 반영하여 `README.md`를 업데이트했습니다.
 
 -----
 
@@ -20,10 +18,10 @@
       * 최종 발표 PPT 및 대본 제작
   * **[Role 3] Frontend**
       * 사용자 인터페이스(UI) 개발 (Static HTML/CSS/JS)
-      * 백엔드 API와 데이터 연동 (쿼리 스트링)
+      * 백엔드 API와 데이터 연동
   * **[Role 4] Database**
-      * API 데이터 수집 및 전처리 (`dom_for_TourAPI_collect.ipynb`)
-      * 분석/운영용 데이터(CSV) 구축 (`festivals_db.csv`)
+      * API 데이터 수집 및 전처리 (`3_detailed_TourAPI_collect.ipynb`)
+      * 운영용 데이터베이스(SQLite) 구축 및 마이그레이션
 
 -----
 
@@ -71,7 +69,7 @@
 
   * **Offline (in Colab):**
 
-    1.  `dom_for_TourAPI_collect.ipynb`에서 수집한 데이터(`festivals_db.csv`)의 'overview' 텍스트를 로드합니다.
+    1.  `3_detailed_TourAPI_collect.ipynb`에서 수집한 데이터(`festivals_db.csv`)의 'overview' 텍스트를 로드합니다.
     2.  `konlpy` (Okt)로 한국어 명사를 토큰화합니다.
     3.  `TfidfVectorizer`로 텍스트를 벡터화합니다.
     4.  `cosine_similarity`로 모든 행사 간의 유사도 행렬(N x N)을 계산합니다.
@@ -92,32 +90,35 @@
 
 ```mermaid
 graph TD
-    subgraph "Offline (Colab)"
+    subgraph "Offline (Colab & Local)"
         A[TourAPI 데이터 수집] --> B(festivals_db.csv);
-        A --> C(ML 모델링);
-        C --> D(cosine_sim_matrix.pkl);
+        B -- python migrate_to_sqlite.py --> C(festivals.db);
+        B --> D(ML 모델링);
+        D --> E(cosine_sim_matrix.pkl);
     end
 
     subgraph "Build (Local/GCP)"
-        E(Dockerfile) --복사--> F[Docker 이미지];
-        B --> F;
-        D --> F;
-        G[frontend/*] --> F;
-        H[backend/*] --> F;
+        F(Dockerfile) --복사--> G[Docker 이미지];
+        C --> G;
+        E --> G;
+        H[frontend/*] --> G;
+        I[backend/*] --> G;
     end
 
     subgraph "Online (Google Cloud Run)"
-        F --배포--> I(FastAPI 서버 실행);
+        G --배포--> J(FastAPI 서버 실행);
     end
 
     subgraph "User"
-        J(사용자) -- GET / --> I;
-        I -- HTML/CSS/JS --> J;
-        J -- (지도 클릭) --> K[GET /category/...?sigungucode=18];
-        I -- (StaticFiles) --> K;
-        K -- (축제 클릭) --> L[GET /recommendations/...?contentid=...];
-        I -- (API 실행) --> L;
-        L -- JSON --> J;
+        K(사용자) -- GET / --> J;
+        J -- (index.html) --> K;
+        K -- (지도 클릭) --> L[GET /category/...?sigungucode=...];
+        J -- (category.html) --> L;
+        L -- (축제 클릭) --> M[GET /festival/...?sigungucode=...];
+        J -- API: GET /festivals --> M;
+        M -- (특정 축제 클릭) --> N[GET /recommandation/...?contentid=...];
+        J -- API: GET /recommendations --> N;
+        N -- (최종 JSON) --> K;
     end
 ```
 
@@ -126,7 +127,7 @@ graph TD
   * **Data Analysis & ML:** `Python`, `Pandas`, `Scikit-learn` (TF-IDF, Cosine Similarity), `Konlpy`
   * **Backend:** `FastAPI`
   * **Frontend (MVP):** `HTML`, `CSS`, `JavaScript` (Static)
-  * **Database (MVP):** `CSV` (-\> `pandas` DataFrame)
+  * **Database (MVP):** `SQLite`
   * **Deployment:** `Docker`, `Google Cloud Run (GCR)`
   * **Data Sources:** `TourAPI (KorService2, DataLabService)`
 
@@ -138,20 +139,19 @@ graph TD
 
   * **데이터 분석:** '관광 쏠림' 현상 및 '정보 격차' 원인 분석 완료.
   * **ML 모델:** `cosine_sim_matrix.pkl` 등 모델 파일 생성 완료.
-  * **백엔드 API:** 'Two-Track' 추천 로직이 포함된 `/recommendations/{contentid}` API 개발 완료.
-  * **프론트엔드:** 피그마(`figma1_1.png` \~ `figma4.png`) 기반의 4페이지 흐름(index → category → festival → recommandation) 개발 완료.
-  * **통합 및 배포:** FastAPI가 프론트엔드 파일을 서빙하도록 통합 완료했으며, `Dockerfile`을 통해 Google Cloud Run에 성공적으로 배포했습니다.
+  * **데이터베이스:** `festivals_db.csv`를 `festivals.db` (SQLite)로 마이그레이션 완료.
+  * **백엔드 API:** 'Two-Track' 추천(`GET /recommendations`) 및 지역별 축제 목록(`GET /festivals`) API 개발 완료.
+  * **프론트엔드:** 피그마(`figma1_1.png` \~ `figma4.png`) 기반의 4페이지 흐름이 API와 연동되어 **동적으로 작동(Live)** 하도록 구현 완료.
+  * **통합 및 배포:** FastAPI가 프론트엔드 파일 서빙과 API를 모두 처리하도록 통합 완료했으며, `Dockerfile`을 통해 Google Cloud Run에 성공적으로 배포했습니다.
 
 ### 2\) 차후 개선점
 
-  * **데이터베이스 교체:**
-      * 현재 `pandas.read_csv()`로 300kb CSV 전체를 메모리에 로드하는 방식에서, 파일 기반 **SQLite**로 마이그레이션합니다.
-  * **API 엔드포인트 확장:**
-      * SQLite 도입에 맞춰, `festival.html`에서 쿼리 스트링(`sigungucode`)에 해당하는 축제 목록만 동적으로 불러올 수 있도록 `GET /festivals` 엔드포인트를 신설합니다.
   * **프론트엔드 고도화:**
-      * 현재의 정적 HTML/JS 구조를 **React** 또는 **Next.js**와 같은 모던 프레임워크로 마이그레이션하여 동적 렌더링을 구현합니다.
+      * 현재의 정적 HTML/JS 구조를 **React** 또는 **Next.js**와 같은 모던 프레임워크로 마이그레이션하여 컴포넌트 기반의 동적 렌더링을 구현합니다.
   * **ML 모델 추가:**
-      * 기획 단계에 있던 '특색 카테고리(K-Means)' 모델을 `4_ML_Modeling.ipynb`에서 구현하고, `GET /categories` 엔드포인트를 신설합니다.
+      * 기획 단계에 있던 '특색 카테고리(K-Means)' 모델을 `5_ML_modeling.ipynb`에서 구현하고, `GET /categories` 엔드포인트를 신설합니다.
+  * **데이터베이스 최적화:**
+      * `lifespan`에서 SQLite DB 전체를 Pandas DataFrame으로 로드하는 대신, API 호출 시마다 필요한 데이터만 `SELECT` 쿼리로 조회하도록 변경하여 메모리 사용량을 최적화합니다.
 
 -----
 
@@ -160,7 +160,7 @@ graph TD
 ```
 .
 ├── Dockerfile              # GCR 배포용
-├── howtodeploy.md          # GCR 배포 가이드
+├── howToDeploy.md          # GCR 배포 가이드
 ├── README.md               # (본 파일)
 │
 ├── backend/
@@ -168,10 +168,11 @@ graph TD
 │   │   ├── main.py           # FastAPI 서버 (API + 정적 파일 서빙)
 │   │   └── __init__.py
 │   ├── data/
-│   │   └── festivals_db.csv  # ML/API용 마스터 데이터
+│   │   ├── festivals.db      # SQLite 데이터베이스
+│   │   └── festivals_db.csv  # (원본 데이터)
 │   ├── models/
-│   │   ├── cosine_sim_matrix.pkl # 코사인 유사도 행렬
-│   │   └── ...               # (기타 pkl 파일)
+│   │   └── cosine_sim_matrix.pkl # 코사인 유사도 행렬
+│   ├── migrate_to_sqlite.py    # DB 마이그레이션 스크립트
 │   └── requirements.txt        # 백엔드 의존성
 │
 ├── frontend/
@@ -186,10 +187,11 @@ graph TD
 │               └── recommandation.html # (Figma 4) 상세 및 추천
 │
 └── notebooks/                # 데이터 분석 및 모델링 과정
-    ├── 1_DataLab_Collect.ipynb    # (완료) 빅데이터 수집
-    ├── 2_DataLab_Visualize.ipynb  # (완료) 코로플레스 맵 시각화
-    ├── 3_TourAPI_Collect.ipynb    # (완료) 국문/영문 행사 데이터 수집
-    └── 4_ML_Modeling.ipynb        # (완료) ML 모델 개발
+    ├── 1_bigDataAPI_collect.ipynb
+    ├── 2_bigDataAPI_visualization.ipynb
+    ├── 3_detailed_TourAPI_collect.ipynb
+    ├── 4_contents_analysis.ipynb
+    └── 5_ML_modeling.ipynb
 ```
 
 -----
@@ -198,13 +200,19 @@ graph TD
 
 ### 1\) 로컬에서 실행 (Local)
 
-1.  프로젝트 루트 폴더(`D-up contest`)로 이동합니다.
-
-2.  `backend` 폴더로 이동하여 `uvicorn` 서버를 실행합니다.
+1.  **DB 마이그레이션 (최초 1회):**
+    `backend` 폴더로 이동하여 `festivals.db` 파일을 생성합니다.
 
     ```bash
     cd backend
     pip install -r requirements.txt
+    python migrate_to_sqlite.py
+    ```
+
+2.  **서버 실행:**
+    ( `backend` 폴더에서) `uvicorn` 서버를 실행합니다.
+
+    ```bash
     uvicorn app.main:app --reload
     ```
 
@@ -214,7 +222,7 @@ graph TD
 
 로컬에서 코드를 수정한 뒤, 프로젝트 루트 폴더(`Dockerfile`이 있는 위치)에서 다음 명령어를 실행하면 자동으로 새 버전이 빌드 및 배포됩니다.
 
-(상세 가이드는 `howtodeploy.md` 참조)
+(상세 가이드는 `howToDeploy.md` 참조)
 
 ```bash
 # [YOUR_PROJECT_ID]와 [SERVICE_NAME]을 본인 값으로 변경
