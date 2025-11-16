@@ -1,9 +1,8 @@
 <!doctype html>
-<html lang="en">
-<head>
+<html lang="en"> <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Details & Recommendations - Festival Compass</title>
+  <title>Festivals - Festival Compass</title>
   <link rel="stylesheet" href="/frontend/style.css">
 </head>
 <body>
@@ -15,35 +14,28 @@
     </header>
     
     <main id="main">
-      <section id="page-detail" class="page">
+      <section id="page-list" class="page">
+        <div class="list-title">Festivals & Events 🎉</div>
         
-        <div id="detail-content">
-          <div class="detail-header">
-            <div id="detail-title-placeholder" class="detail-title">Loading...</div>
-            <div id="detail-chip-placeholder" class="chip">...</div>
-          </div>
-          <div id="detail-img-placeholder" class="detail-img">
-            (Image Loading...)
-          </div>
-          <p id="detail-desc-placeholder" class="detail-desc">
-            Loading details...
-          </p>
+        <div id="festivalList" class="card-list">
+          <a href="./recommandation/recommandation.html?contentid=3113671" class="card clickable" tabindex="0">
+            <div class="card-title">Garak-mall Bread Festival</div>
+            <div class="card-desc">932 Yangjae-daero, Songpa-gu, Seoul</div>
+            <div class="chip">Songpa-gu</div>
+          </a>
+          <a href="./recommandation/recommandation.html?contentid=42" class="card clickable" tabindex="0">
+            <div class="card-title">K-Food Festa</div>
+            <div class="card-desc">513 Yeongdong-daero, Gangnam-gu, Seoul</div>
+            <div class="chip">Gangnam-gu</div>
+          </a>
+          <a href="./recommandation/recommandation.html?contentid=42" class="card clickable" tabindex="0">
+            <div class="card-title">Seoul Gastronomy Week</div>
+            <div class="card-desc">...Jung-gu, Seoul</div>
+            <div class="chip">Jung-gu</div>
+          </a>
         </div>
-
-        <hr/>
-
-        <div class="list-title">
-          "How about these areas?" (Track 2)
-        </div>
-        <div class="card-list" id="track2-list">
-          </div>
-
-        <div class="list-title">
-          "You might also like:" (Track 1)
-        </div>
-        <div class="card-list" id="track1-list">
-          </div>
       </section>
+      
     </main>
   </div>
   
