@@ -1,7 +1,3 @@
-네, SQLite 통합 및 Google Cloud Run 배포 등 최신 내용을 모두 반영하여 `README.md`를 업데이트했습니다.
-
------
-
 # 🧭 Festival Compass in Seoul
 
 **[Dataup contest 2025] 서울시 외국인 관광객의 '관광 쏠림' 문제 해결을 위한 특색 문화 체험 추천 솔루션**
@@ -233,3 +229,4 @@ gcloud run deploy [SERVICE_NAME] \
     --allow-unauthenticated \
     --project=[YOUR_PROJECT_ID]
 ```
+
