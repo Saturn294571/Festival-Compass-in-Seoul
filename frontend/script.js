@@ -114,13 +114,12 @@ async function pageLoadRecommandation(sigungucode, contentId) { // [수정]
     return;
   }
 
-  const API_BASE_URL = "http://127.0.0.1:8000"; 
+  const API_BASE_URL = ""; 
   const TOP_N = 3;
   
   try {
     // API 호출은 contentId만 필요
-    const response = await fetch(`${API_BASE_URL}/recommendations/${contentId}?top_n=${TOP_N}`);
-    
+    const response = await fetch(`${API_BASE_URL}/recommendations/${contentId}?top_n=${TOP_N}`);    
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.detail || "Failed to fetch recommendations");

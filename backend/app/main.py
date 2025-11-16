@@ -5,6 +5,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 from contextlib import asynccontextmanager
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -111,10 +112,16 @@ async def lifespan(app: FastAPI):
     print("서버 종료: 모델을 메모리에서 해제합니다.")
     models.clear()
 
-# --- 3. FastAPI 앱 생성 ---
+# --- 3. FastAPI 앱 생성, CORS 미들웨어 설정 ---
 app = FastAPI(lifespan=lifespan)
 
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 모든 Origin 허용 (데모용)
+    allow_credentials=True,
+    allow_methods=["*"], # 모든 HTTP 메소드 허용
+    allow_headers=["*"], # 모든 HTTP 헤더 허용
+)
 # --- 4. 핵심 추천 로직 (헬퍼 함수) ---
 
 def get_recommendations(content_id: str, top_n: int = 5):
