@@ -1,39 +1,71 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Festival Compass in Seoul</title>
-  <link rel="stylesheet" href="/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/frontend/style.css"> <!-- 커스텀 스타일 -->
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="row">
-        <a href="/index.html"><strong>Festival Compass in Seoul</strong></a>
-        </div>
+  <div class="d-flex flex-column min-vh-100">
+    <!-- 헤더 -->
+    <header class="border-bottom">
+      <div class="container">
+        <div class="d-flex align-items-center justify-content-between py-3">
+                      <a href="/frontend/index.html" class="d-flex align-items-center text-dark text-decoration-none">
+                        <i class="bi bi-compass-fill fs-4 me-2 text-primary"></i>
+                        <span class="fs-4 fw-bold">Festival Compass in Seoul</span>
+                      </a>
+                      <div class="ms-auto">
+                        <button class="btn btn-outline-secondary" type="button" disabled>
+                          <i class="bi bi-globe"></i> Language
+                        </button>
+                      </div>        </div>
+      </div>
     </header>
     
-    <main id="main">
-      <section id="page-main" class="page">
-        
-        <div id="panel">
-          <div class="list-title">Explore Seoul 🗺️</div>
-          <div class="panel-desc">Click on a district on the map to discover hidden festivals and events.</div>
+    <!-- 메인 콘텐츠 -->
+    <main class="flex-grow-1">
+      <div class="container py-4">
+        <!-- 패널 -->
+        <div class="p-4 mb-4 bg-light border rounded-3">
+          <h1 class="display-6 fw-bold">Explore Seoul 🗺️</h1>
+          <p class="col-md-8 fs-5">지도의 각 구를 클릭하여 축제와 행사를 발견하세요.</p>
         </div>
 
-        <div id="mapWrap" tabindex="0">
-          <div class="map-placeholder">(Seoul Map Overlay)</div>
-          
-          <a href="./category/category.html?sigungucode=18" class="map-icon" style="top: 40%; left: 55%;">(Click: Songpa-gu)</a>
-          <a href="./category/category.html?sigungucode=1" class="map-icon" style="top: 45%; left: 50%;">(Click: Gangnam-gu)</a>
-          <a href="./category/category.html?sigungucode=23" class="map-icon" style="top: 20%; left: 30%;">(Click: Jongno-gu)</a>
-          <a href="./category/category.html?sigungucode=20" class="map-icon" style="top: 60%; left: 25%;">(Click: Yeongdeungpo-gu)</a>
+        <!-- 지도 -->
+        <div id="mapWrap" class="position-relative bg-light border rounded-3" style="aspect-ratio: 16/10;">
+            <img src="/frontend/assets/seoul_overlay.png" alt="Seoul Map Overlay" class="img-fluid position-absolute w-100 h-100" style="opacity: 0.8; object-fit: contain; left: 50%; transform: translateX(-50%);">
+            <!-- 자치구 링크: 접근성과 스타일링을 위해 Bootstrap "btn" 사용 -->
+            <a href="/frontend/category/category.html?sigungucode=15" class="btn btn-sm btn-outline-primary position-absolute" style="top: 76%; left: 55%; transform: translate(-50%, -50%);">서초구</a>
+            <a href="/frontend/category/category.html?sigungucode=1" class="btn btn-sm btn-outline-primary position-absolute" style="top: 75%; left: 62%; transform: translate(-50%, -50%);">강남구</a>
+            <a href="/frontend/category/category.html?sigungucode=18" class="btn btn-sm btn-outline-primary position-absolute" style="top: 70%; left: 72%; transform: translate(-50%, -50%);">송파구</a>
+            <a href="/frontend/category/category.html?sigungucode=12" class="btn btn-sm btn-outline-primary position-absolute" style="top: 72%; left: 45%; transform: translate(-50%, -50%);">동작구</a>
+            <a href="/frontend/category/category.html?sigungucode=21" class="btn btn-sm btn-outline-primary position-absolute" style="top: 62%; left: 51%; transform: translate(-50%,-50%);">용산구</a>
+            <a href="/frontend/category/category.html?sigungucode=24" class="btn btn-sm btn-outline-primary position-absolute" style="top: 51%; left: 53%; transform: translate(-50%,-50%);">중구</a>
+            <a href="/frontend/category/category.html?sigungucode=23" class="btn btn-sm btn-outline-primary position-absolute" style="top: 42%; left: 52%; transform: translate(-50%,-50%);">종로구</a>
+            <a href="/frontend/category/category.html?sigungucode=14" class="btn btn-sm btn-outline-primary position-absolute" style="top: 45%; left: 44%; transform: translate(-50%,-50%);">서대문구</a>
+            <a href="/frontend/category/category.html?sigungucode=13" class="btn btn-sm btn-outline-primary position-absolute" style="top: 53%; left: 40%; transform: translate(-50%,-50%);">마포구</a>
+            <a href="/frontend/category/category.html?sigungucode=22" class="btn btn-sm btn-outline-primary position-absolute" style="top: 30%; left: 43%; transform: translate(-50%,-50%);">은평구</a>
+            <a href="/frontend/category/category.html?sigungucode=3" class="btn btn-sm btn-outline-primary position-absolute" style="top: 23%; left: 58%; transform: translate(-50%,-50%);">강북구</a>
+            <a href="/frontend/category/category.html?sigungucode=9" class="btn btn-sm btn-outline-primary position-absolute" style="top: 25%; left: 68%; transform: translate(-50%,-50%);">노원구</a>
+            <a href="/frontend/category/category.html?sigungucode=20" class="btn btn-sm btn-outline-primary position-absolute" style="top: 66%; left: 38%; transform: translate(-50%,-50%);">영등포구</a>
+            <a href="/frontend/category/category.html?sigungucode=5" class="btn btn-sm btn-outline-primary position-absolute" style="top: 85%; left: 45%; transform: translate(-50%,-50%);">관악구</a>
         </div>
-      </section>
+      </div>
     </main>
+
+    <!-- 푸터 -->
+    <footer class="footer mt-auto py-3 bg-light border-top">
+      <div class="container text-center">
+        <span class="text-muted">© 2025 Festival Compass in Seoul. All Rights Reserved.</span>
+      </div>
+    </footer>
   </div>
   
-  <script src="/script.js" defer></script>
+  <script src="/frontend/script.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
